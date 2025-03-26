@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>革命烈士线上纪念馆</title>
+  <style>
+    :root {
+      --primary-color: #777;
+      --secondary-color: #999;
+    }
+    body {
+      font-family: 'Microsoft YaHei', 'SimSun', serif;
+      background: #e0e0e0 url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==');
+      margin: 0;
+      min-height: 100vh;
+    }
+    .memorial-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(240, 240, 240, 0.95);
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    .header-banner {
+      width: 100%;
+      height: 200px;
+      background: url('https://img.zcool.cn/community/01e5e55d83c1f4a801205e4b9c3c7e.jpg') center/cover;
+      margin-bottom: 30px;
+      border-radius: 8px;
+      position: relative;
+      filter: grayscale(100%);
+    }
+    .header-banner::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+    }
+    .title {
+      text-align: center;
+      color: var(--primary-color);
+      margin: 20px 0;
+      font-size: 2.5em;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .counters {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .counter {
+      text-align: center;
+      padding: 15px;
+      background: linear-gradient(145deg, #f0f0f0, #e8e8e8);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .counter-number {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 5px 0;
+      color: var(--primary-color);
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .action-btn {
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 16px;
+      background: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .music-control {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--primary-color);
+      color: white;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .message-box {
+      border-top: 2px solid var(--primary-color);
+      padding-top: 25px;
+    }
+    /* 图片和视频样式 */
+    .inserted-image {
+      width: 100%;
+      margin-bottom: 20px;
+      filter: grayscale(100%);
+    }
+    .inserted-video {
+      width: 100%;
+      margin-top: 20px;
+      filter: grayscale(100%);
+    }
+    /* 留言板样式 */
+    #message-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    #message-list li {
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    #message-input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    #send-message {
+      padding: 10px 20px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #send-message:hover {
+      background-color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="memorial-container">
+    <div class="memorial-container">
+      <!-- 修正后的图片链接（示例需替换为实际有效地址） -->
+      <img class="inserted-image" 
+           src="/workspaces/gmlsjng_1/Revolutionary Martyrs' Memorial.png" 
+           alt="革命烈士纪念馆主图">
+      
+      <div class="header-banner"></div>
+      <h1 class="title">革命烈士永垂不朽</h1>
+
+    <div class="counters">
+      <div class="counter">
+        <div>点亮蜡烛</div>
+        <div class="counter-number" id="candleCount">0</div>
+        <div>支</div>
+      </div>
+      <div class="counter">
+        <div>敬献鲜花</div>
+        <div class="counter-number" id="flowerCount">0</div>
+        <div>朵</div>
+      </div>
+      <div class="counter">
+        <div>电子香炉</div>
+        <div class="counter-number" id="incenseCount">0</div>
+        <div>柱</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="action-btn" id="btnCandle">🕯️ 点亮蜡烛</button>
+      <button class="action-btn" id="btnFlower">🌸 敬献鲜花</button>
+      <button class="action-btn" id="btnIncense">🎐 电子香炉</button>
+    </div>
+
+<!-- 修正后的视频链接（示例需替换为实际有效地址） -->
+<video class="inserted-video" controls>
+  <source src="/workspaces/gmlsjng_1/Revolutionary Martyrs' Memorial.mp4" 
+          type="video/mp4">
+  您的浏览器不支持视频播放。
+</video>
+
+    <!-- 留言板 -->
+    <div class="message-box">
+      <h2>留言板</h2>
+      <input type="text" id="message-input" placeholder="请输入留言内容">
+      <button id="send-message">发送留言</button>
+      <ul id="message-list"></ul>
+    </div>
+
+    <div class="music-control" id="musicControl">
+      <span id="musicIcon">▶️</span>
+      <audio id="bgMusic" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2023/03/25/audio_ebd8a4d9b6.mp3" type="audio/mpeg">
+      </audio>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 数据初始化及持久化
+      const storageKeys = {
+        messages: 'memorialMessages',
+        candle: 'candleCount',
+        flower: 'flowerCount',
+        incense: 'incenseCount'
+      };
+
+      const defaultData = {
+        messages: [],
+        candleCount: 0,
+        flowerCount: 0,
+        incenseCount: 0
+      };
+
+      const loadData = () => {
+        return {
+          messages: JSON.parse(localStorage.getItem(storageKeys.messages)) || defaultData.messages,
+          candleCount: parseInt(localStorage.getItem(storageKeys.candle)) || defaultData.candleCount,
+          flowerCount: parseInt(localStorage.getItem(storageKeys.flower)) || defaultData.flowerCount,
+          incenseCount: parseInt(localStorage.getItem(storageKeys.incense)) || defaultData.incenseCount
+        };
+      };
+
+      let data = loadData();
+
+      // DOM 元素缓存
+      const candleEl = document.getElementById('candleCount');
+      const flowerEl = document.getElementById('flowerCount');
+      const incenseEl = document.getElementById('incenseCount');
+      const messageListEl = document.getElementById('message-list');
+      const messageInputEl = document.getElementById('message-input');
+      const btnCandle = document.getElementById('btnCandle');
+      const btnFlower = document.getElementById('btnFlower');
+      const btnIncense = document.getElementById('btnIncense');
+      const btnSendMessage = document.getElementById('send-message');
+      const musicControlEl = document.getElementById('musicControl');
+      const musicIconEl = document.getElementById('musicIcon');
+      const bgMusic = document.getElementById('bgMusic');
+
+      // WebSocket 连接
+      // const socket = new WebSocket('ws://localhost:8080');
+      socket.onerror = (err) => console.error('WebSocket error:', err);
+
+      // 更新本地存储
+      const updateLocalStorage = (key, value) => {
+        localStorage.setItem(key, value);
+      };
+
+      // 更新计数器显示
+      const updateCounters = () => {
+        candleEl.textContent = data.candleCount;
+        flowerEl.textContent = data.flowerCount;
+        incenseEl.textContent = data.incenseCount;
+      };
+
+      // 更新留言列表显示
+      const updateMessageList = () => {
+        messageListEl.innerHTML = data.messages.map(msg => `<li>${msg}</li>`).join('');
+      };
+
+      // 添加效果（这里示例为简单console输出，可根据需求添加动画效果）
+      const createEffect = (symbol) => {
+        console.log(`效果：${symbol}`);
+      };
+
+      // 发送数据到服务器
+      const sendData = (type) => {
+        const message = {
+          type: type,
+          count: data[`${type}Count`]
+        };
+        socket.send(JSON.stringify(message));
+      };
+
+      // 通用新增功能
+      const addItem = (type, symbol) => {
+        data[`${type}Count`]++;
+        updateLocalStorage(storageKeys[type], data[`${type}Count`]);
+        updateCounters();
+        createEffect(symbol);
+        sendData(type);
+      };
+
+      // 事件绑定
+      btnCandle.addEventListener('click', () => addItem('candle', '🕯️'));
+      btnFlower.addEventListener('click', () => addItem('flower', '🌸'));
+      btnIncense.addEventListener('click', () => addItem('incense', '🎐'));
+
+      // 发送留言
+      btnSendMessage.addEventListener('click', () => {
+        const message = messageInputEl.value.trim();
+        if (message) {
+          const messageObj = { type: 'message', content: message };
+          socket.send(JSON.stringify(messageObj));
+          messageInputEl.value = '';
+        }
+      });
+
+      // 背景音乐控制
+      musicControlEl.addEventListener('click', () => {
+        if (bgMusic.paused) {
+          bgMusic.play();
+          musicIconEl.textContent = '⏸️';
+        } else {
+          bgMusic.pause();
+          musicIconEl.textContent = '▶️';
+        }
+      });
+
+      // WebSocket 接收消息并更新页面
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        switch(message.type) {
+          case 'candle':
+          case 'flower':
+          case 'incense':
+            data[`${message.type}Count`] = message.count;
+            updateLocalStorage(storageKeys[message.type], message.count);
+            updateCounters();
+            break;
+          case 'message':
+            data.messages.push(message.content);
+            updateLocalStorage(storageKeys.messages, JSON.stringify(data.messages));
+            updateMessageList();
+            break;
+          default:
+            console.warn('未知消息类型:', message.type);
+        }
+      };
+
+      // 导出数据功能（可根据需求绑定至按钮）
+      window.exportData = () => {
+        const exportObj = { timestamp: new Date().toISOString(), ...data };
+        const dataStr = JSON.stringify(exportObj, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `memorial-data_${new Date().toLocaleDateString()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
+      // 初始化显示
+      updateCounters();
+      updateMessageList();
+    });
+  </script>
+</body>
+</html>
