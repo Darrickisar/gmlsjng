@@ -110,6 +110,9 @@
       border-radius: 5px;
       padding: 10px;
       margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     #message-input {
       width: 100%;
@@ -132,15 +135,10 @@
   </style>
 </head>
 <body>
-  <!-- 修正嵌套容器问题 -->
   <div class="memorial-container">
-    <img class="inserted-image" 
-     src="https://www.helloimg.com/i/2025/03/26/67e4192275ee1.png" 
-     alt="革命烈士纪念馆主图">
-    
+    <img class="inserted-image" src="https://www.helloimg.com/i/2025/03/26/67e4192275ee1.png" alt="革命烈士纪念馆主图">
     <div class="header-banner"></div>
     <h1 class="title">革命烈士永垂不朽</h1>
-
     <div class="counters">
       <div class="counter">
         <div>点亮蜡烛</div>
@@ -158,26 +156,21 @@
         <div>柱</div>
       </div>
     </div>
-
     <div class="actions">
       <button class="action-btn" id="btnCandle">🕯️ 点亮蜡烛</button>
       <button class="action-btn" id="btnFlower">🌸 敬献鲜花</button>
       <button class="action-btn" id="btnIncense">🎐 电子香炉</button>
     </div>
-
     <video class="inserted-video" controls>
-      <source src="https://ik.imagekit.io/RedGhst1818/Revolutionary%20Martyrs'%20Memorial.mp4?updatedAt=1743003548987" 
-              type="video/mp4">
+      <source src="https://ik.imagekit.io/RedGhst1818/Revolutionary%20Martyrs'%20Memorial.mp4?updatedAt=1743003548987" type="video/mp4">
       您的浏览器不支持视频播放。
     </video>
-
     <div class="message-box">
       <h2>留言板</h2>
       <input type="text" id="message-input" placeholder="请输入留言内容">
       <button id="send-message">发送留言</button>
       <ul id="message-list"></ul>
     </div>
-
     <div class="music-control" id="musicControl">
       <span id="musicIcon">▶️</span>
       <audio id="bgMusic" loop>
@@ -185,203 +178,172 @@
       </audio>
     </div>
   </div>
-
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // 数据存储配置
-      const storageKeys = {
-        messages: 'memorialMessages',
-        candle: 'candleCount',
-        flower: 'flowerCount',
-        incense: 'incenseCount'
-      };
+  // main.js
+document.addEventListener('DOMContentLoaded', () => {
+  // DOM 元素引用
+  const candleEl = document.getElementById('candleCount');
+  const flowerEl = document.getElementById('flowerCount');
+  const incenseEl = document.getElementById('incenseCount');
+  const messageListEl = document.getElementById('message-list');
+  const messageInputEl = document.getElementById('message-input');
+  const btnCandle = document.getElementById('btnCandle');
+  const btnFlower = document.getElementById('btnFlower');
+  const btnIncense = document.getElementById('btnIncense');
+  const btnSendMessage = document.getElementById('send-message');
+  const musicControlEl = document.getElementById('musicControl');
+  const musicIconEl = document.getElementById('musicIcon');
+  const bgMusic = document.getElementById('bgMusic');
+  // 删除留言的密码（前端仅作演示，实际请在后端加入更完善的验证）
+  const DELETE_PASSWORD = "123456";
 
-      // 初始化默认数据
-      const defaultData = {
-        messages: [],
-        candleCount: 0,
-        flowerCount: 0,
-        incenseCount: 0
-      };
+  // 动画效果：文字从下向上飘
+  const createEffect = (symbol) => {
+    const effectEl = document.createElement('div');
+    effectEl.style.position = 'fixed';
+    effectEl.style.fontSize = '24px';
+    effectEl.style.animation = 'floatUp 1s ease-out';
+    effectEl.textContent = symbol;
+    document.body.appendChild(effectEl);
+    setTimeout(() => effectEl.remove(), 1000);
+  };
 
-      // 加载本地数据
-      const loadData = () => ({
-        messages: JSON.parse(localStorage.getItem(storageKeys.messages)) || defaultData.messages,
-        candleCount: parseInt(localStorage.getItem(storageKeys.candle)) || defaultData.candleCount,
-        flowerCount: parseInt(localStorage.getItem(storageKeys.flower)) || defaultData.flowerCount,
-        incenseCount: parseInt(localStorage.getItem(storageKeys.incense)) || defaultData.incenseCount
+  // 读取计数器数据（通过 API GET 请求）
+  const loadCounters = async () => {
+    try {
+      const [candleRes, flowerRes, incenseRes] = await Promise.all([
+        fetch('/api/counter?type=candle'),
+        fetch('/api/counter?type=flower'),
+        fetch('/api/counter?type=incense')
+      ]);
+      const candleData = await candleRes.json();
+      const flowerData = await flowerRes.json();
+      const incenseData = await incenseRes.json();
+      candleEl.textContent = candleData.count || 0;
+      flowerEl.textContent = flowerData.count || 0;
+      incenseEl.textContent = incenseData.count || 0;
+    } catch (err) {
+      console.error('加载计数器出错:', err);
+    }
+  };
+
+  // 读取留言列表（通过 API GET 请求）
+  const loadMessages = async () => {
+    try {
+      const res = await fetch('/api/messages');
+      const result = await res.json();
+      updateMessageList(result.messages || []);
+    } catch (err) {
+      console.error('加载留言出错:', err);
+    }
+  };
+
+  // 更新留言列表到页面
+  const updateMessageList = (messages) => {
+    messageListEl.innerHTML = '';
+    messages.forEach((msg, index) => {
+      const li = document.createElement('li');
+      li.textContent = msg;
+      // 添加删除按钮
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '❌ 删除';
+      deleteBtn.dataset.index = index;
+      deleteBtn.addEventListener('click', () => deleteMessage(index));
+      li.appendChild(deleteBtn);
+      messageListEl.appendChild(li);
+    });
+  };
+
+  // 删除留言（调用 API DELETE 请求）
+  const deleteMessage = async (index) => {
+    const password = prompt('请输入删除密码:');
+    if (password !== DELETE_PASSWORD) {
+      alert('密码错误，无法删除留言！');
+      return;
+    }
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index })
       });
+      const result = await res.json();
+      updateMessageList(result.messages || []);
+    } catch (err) {
+      console.error('删除留言出错:', err);
+    }
+  };
 
-      let data = loadData();
+  // 累加计数器（调用 API POST 请求）
+  const addCounter = async (type, symbol) => {
+    try {
+      const res = await fetch(`/api/counter?type=${type}`, { method: 'POST' });
+      const data = await res.json();
+      if (type === 'candle') {
+        candleEl.textContent = data.count;
+      } else if (type === 'flower') {
+        flowerEl.textContent = data.count;
+      } else if (type === 'incense') {
+        incenseEl.textContent = data.count;
+      }
+      createEffect(symbol);
+      // 按钮点击时的视觉反馈
+      const btn = document.getElementById(`btn${type.charAt(0).toUpperCase() + type.slice(1)}`);
+      btn.style.transform = 'scale(1.1)';
+      setTimeout(() => { btn.style.transform = 'scale(1)'; }, 200);
+    } catch (err) {
+      console.error(`累加 ${type} 计数出错:`, err);
+    }
+  };
 
-      // DOM元素引用
-      const candleEl = document.getElementById('candleCount');
-      const flowerEl = document.getElementById('flowerCount');
-      const incenseEl = document.getElementById('incenseCount');
-      const messageListEl = document.getElementById('message-list');
-      const messageInputEl = document.getElementById('message-input');
-      const btnCandle = document.getElementById('btnCandle');
-      const btnFlower = document.getElementById('btnFlower');
-      const btnIncense = document.getElementById('btnIncense');
-      const btnSendMessage = document.getElementById('send-message');
-      const musicControlEl = document.getElementById('musicControl');
-      const musicIconEl = document.getElementById('musicIcon');
-      const bgMusic = document.getElementById('bgMusic');
+  // 绑定计数器按钮事件
+  btnCandle.addEventListener('click', () => addCounter('candle', '🕯️'));
+  btnFlower.addEventListener('click', () => addCounter('flower', '🌸'));
+  btnIncense.addEventListener('click', () => addCounter('incense', '🎐'));
 
-      // 更新本地存储
-      const updateLocalStorage = (key, value) => {
-        localStorage.setItem(key, value);
-      };
+  // 发送留言（调用 API POST 请求）
+  btnSendMessage.addEventListener('click', async () => {
+    const message = messageInputEl.value.trim();
+    if (!message) return;
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+      const result = await res.json();
+      updateMessageList(result.messages || []);
+      messageInputEl.value = '';
+    } catch (err) {
+      console.error('发送留言出错:', err);
+    }
+  });
 
-      // 更新计数器显示
-      const updateCounters = () => {
-        candleEl.textContent = data.candleCount;
-        flowerEl.textContent = data.flowerCount;
-        incenseEl.textContent = data.incenseCount;
-      };
+  // 音乐控制
+  musicControlEl.addEventListener('click', () => {
+    if (bgMusic.paused) {
+      bgMusic.play();
+      musicIconEl.textContent = '⏸️';
+    } else {
+      bgMusic.pause();
+      musicIconEl.textContent = '▶️';
+    }
+  });
 
-      // 更新留言列表
-      const updateMessageList = () => {
-        messageListEl.innerHTML = data.messages.map(msg => 
-          `<li>${msg}</li>`
-        ).join('');
-      };
+  // 初始化加载数据
+  loadCounters();
+  loadMessages();
 
-      // 添加互动效果
-      const createEffect = (symbol) => {
-        const effectEl = document.createElement('div');
-        effectEl.style.position = 'fixed';
-        effectEl.style.fontSize = '24px';
-        effectEl.style.animation = 'floatUp 1s ease-out';
-        effectEl.textContent = symbol;
-        document.body.appendChild(effectEl);
-
-        // 动画结束后移除元素
-        setTimeout(() => {
-          effectEl.remove();
-        }, 1000);
-      };
-
-      // 核心累加功能
-      const addItem = (type, symbol) => {
-        data[`${type}Count`]++;
-        updateLocalStorage(storageKeys[type], data[`${type}Count`]);
-        updateCounters();
-        createEffect(symbol);
-        
-        // 添加视觉反馈
-        const btn = document.getElementById(`btn${type.charAt(0).toUpperCase() + type.slice(1)}`);
-        btn.style.transform = 'scale(1.1)';
-        setTimeout(() => {
-          btn.style.transform = 'scale(1)';
-        }, 200);
-      };
-
-      // 事件绑定
-      btnCandle.addEventListener('click', () => addItem('candle', '🕯️'));
-      btnFlower.addEventListener('click', () => addItem('flower', '🌸'));
-      btnIncense.addEventListener('click', () => addItem('incense', '🎐'));
-
-      // 留言功能
-
-      btnSendMessage.addEventListener('click', () => {
-  const message = messageInputEl.value.trim();
-  if (message) {
-    data.messages.push(message);
-    updateLocalStorage(storageKeys.messages, JSON.stringify(data.messages));
-    updateMessageList();
-    messageInputEl.value = ''; // 清空输入框
-  }
+  // 添加动画 keyframes（用于文字浮动效果）
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes floatUp {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-100px); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
 });
-        
-      document.addEventListener('DOMContentLoaded', () => {
-    const storageKeys = {
-      messages: 'memorialMessages',
-      candle: 'candleCount',
-      flower: 'flowerCount',
-      incense: 'incenseCount'
-    };
-
-    const defaultData = {
-      messages: [],
-      candleCount: 0,
-      flowerCount: 0,
-      incenseCount: 0
-    };
-
-    const loadData = () => ({
-      messages: JSON.parse(localStorage.getItem(storageKeys.messages)) || defaultData.messages,
-      candleCount: parseInt(localStorage.getItem(storageKeys.candle)) || defaultData.candleCount,
-      flowerCount: parseInt(localStorage.getItem(storageKeys.flower)) || defaultData.flowerCount,
-      incenseCount: parseInt(localStorage.getItem(storageKeys.incense)) || defaultData.incenseCount
-    });
-
-    let data = loadData();
-    const messageListEl = document.getElementById('message-list');
-    const messageInputEl = document.getElementById('message-input');
-    const btnSendMessage = document.getElementById('send-message');
-    const DELETE_PASSWORD = "123456";
-
-    const updateLocalStorage = (key, value) => {
-      localStorage.setItem(key, value);
-    };
-
-    const updateMessageList = () => {
-  messageListEl.innerHTML = '';
-  data.messages.forEach((msg, index) => {
-    const li = document.createElement('li');
-    li.textContent = msg;
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = '❌ 删除';
-    deleteBtn.dataset.index = index;
-    deleteBtn.addEventListener('click', deleteMessage);
-
-    li.appendChild(deleteBtn);
-    messageListEl.appendChild(li);
-  });
-};
-
-const deleteMessage = (event) => {
-  const index = event.target.dataset.index;
-  const password = prompt('请输入删除密码:');
-  if (password === DELETE_PASSWORD) {
-    data.messages.splice(index, 1);
-    updateLocalStorage(storageKeys.messages, JSON.stringify(data.messages));
-    updateMessageList();
-  } else {
-    alert('密码错误，无法删除留言！');
-  }
-};
-
-    updateMessageList();
-  });
-
-      // 音乐控制
-      musicControlEl.addEventListener('click', () => {
-        if (bgMusic.paused) {
-          bgMusic.play();
-          musicIconEl.textContent = '⏸️';
-        } else {
-          bgMusic.pause();
-          musicIconEl.textContent = '▶️';
-        }
-      });
-
-      // 初始化显示
-      updateCounters();
-      updateMessageList();
-
-      // 添加动画样式
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes floatUp {
-          0% { transform: translateY(0); opacity: 1; }
-          100% { transform: translateY(-100px); opacity: 0; }
-        }
-      `;
-      document.head.appendChild(style);
-    });
   </script>
 </body>
 </html>
