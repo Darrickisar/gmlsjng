@@ -317,34 +317,32 @@
     };
 
     const updateMessageList = () => {
-      messageListEl.innerHTML = data.messages.map((msg, index) => 
-        `<li>
-          ${msg} 
-          <button onclick="deleteMessage(${index})">❌ 删除</button>
-        </li>`
-      ).join('');
-    };
+  messageListEl.innerHTML = '';
+  data.messages.forEach((msg, index) => {
+    const li = document.createElement('li');
+    li.textContent = msg;
 
-    btnSendMessage.addEventListener('click', () => {
-      const message = messageInputEl.value.trim();
-      if (message) {
-        data.messages.push(message);
-        updateLocalStorage(storageKeys.messages, JSON.stringify(data.messages));
-        updateMessageList();
-        messageInputEl.value = '';
-      }
-    });
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '❌ 删除';
+    deleteBtn.dataset.index = index;
+    deleteBtn.addEventListener('click', deleteMessage);
 
-    window.deleteMessage = (index) => {
-      const password = prompt("请输入删除密码:");
-      if (password === DELETE_PASSWORD) {
-        data.messages.splice(index, 1);
-        updateLocalStorage(storageKeys.messages, JSON.stringify(data.messages));
-        updateMessageList();
-      } else {
-        alert("密码错误，无法删除留言！");
-      }
-    };
+    li.appendChild(deleteBtn);
+    messageListEl.appendChild(li);
+  });
+};
+
+const deleteMessage = (event) => {
+  const index = event.target.dataset.index;
+  const password = prompt('请输入删除密码:');
+  if (password === DELETE_PASSWORD) {
+    data.messages.splice(index, 1);
+    updateLocalStorage(storageKeys.messages, JSON.stringify(data.messages));
+    updateMessageList();
+  } else {
+    alert('密码错误，无法删除留言！');
+  }
+};
 
     updateMessageList();
   });
