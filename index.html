@@ -108,7 +108,6 @@
       border-top: 2px solid var(--primary-color);
       padding-top: 25px;
     }
-    /* 图片和视频样式 */
     .inserted-image {
       width: 100%;
       margin-bottom: 20px;
@@ -119,7 +118,6 @@
       margin-top: 20px;
       filter: grayscale(100%);
     }
-    /* 留言板样式 */
     #message-list {
       list-style-type: none;
       padding: 0;
@@ -151,15 +149,14 @@
   </style>
 </head>
 <body>
+  <!-- 修正嵌套容器问题 -->
   <div class="memorial-container">
-    <div class="memorial-container">
-      <!-- 修正后的图片链接（示例需替换为实际有效地址） -->
-      <img class="inserted-image" 
-           src="/workspaces/gmlsjng_1/Revolutionary Martyrs' Memorial.png" 
-           alt="革命烈士纪念馆主图">
-      
-      <div class="header-banner"></div>
-      <h1 class="title">革命烈士永垂不朽</h1>
+    <img class="inserted-image" 
+         src="/workspaces/gmlsjng_1/Revolutionary Martyrs' Memorial.png" 
+         alt="革命烈士纪念馆主图">
+    
+    <div class="header-banner"></div>
+    <h1 class="title">革命烈士永垂不朽</h1>
 
     <div class="counters">
       <div class="counter">
@@ -185,14 +182,12 @@
       <button class="action-btn" id="btnIncense">🎐 电子香炉</button>
     </div>
 
-<!-- 修正后的视频链接（示例需替换为实际有效地址） -->
-<video class="inserted-video" controls>
-  <source src="/workspaces/gmlsjng_1/Revolutionary Martyrs' Memorial.mp4" 
-          type="video/mp4">
-  您的浏览器不支持视频播放。
-</video>
+    <video class="inserted-video" controls>
+      <source src="/workspaces/gmlsjng_1/Revolutionary Martyrs' Memorial.mp4" 
+              type="video/mp4">
+      您的浏览器不支持视频播放。
+    </video>
 
-    <!-- 留言板 -->
     <div class="message-box">
       <h2>留言板</h2>
       <input type="text" id="message-input" placeholder="请输入留言内容">
@@ -210,7 +205,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // 数据初始化及持久化
+      // 数据存储配置
       const storageKeys = {
         messages: 'memorialMessages',
         candle: 'candleCount',
@@ -218,6 +213,7 @@
         incense: 'incenseCount'
       };
 
+      // 初始化默认数据
       const defaultData = {
         messages: [],
         candleCount: 0,
@@ -225,18 +221,17 @@
         incenseCount: 0
       };
 
-      const loadData = () => {
-        return {
-          messages: JSON.parse(localStorage.getItem(storageKeys.messages)) || defaultData.messages,
-          candleCount: parseInt(localStorage.getItem(storageKeys.candle)) || defaultData.candleCount,
-          flowerCount: parseInt(localStorage.getItem(storageKeys.flower)) || defaultData.flowerCount,
-          incenseCount: parseInt(localStorage.getItem(storageKeys.incense)) || defaultData.incenseCount
-        };
-      };
+      // 加载本地数据
+      const loadData = () => ({
+        messages: JSON.parse(localStorage.getItem(storageKeys.messages)) || defaultData.messages,
+        candleCount: parseInt(localStorage.getItem(storageKeys.candle)) || defaultData.candleCount,
+        flowerCount: parseInt(localStorage.getItem(storageKeys.flower)) || defaultData.flowerCount,
+        incenseCount: parseInt(localStorage.getItem(storageKeys.incense)) || defaultData.incenseCount
+      });
 
       let data = loadData();
 
-      // DOM 元素缓存
+      // DOM元素引用
       const candleEl = document.getElementById('candleCount');
       const flowerEl = document.getElementById('flowerCount');
       const incenseEl = document.getElementById('incenseCount');
@@ -250,10 +245,6 @@
       const musicIconEl = document.getElementById('musicIcon');
       const bgMusic = document.getElementById('bgMusic');
 
-      // WebSocket 连接
-      // const socket = new WebSocket('ws://localhost:8080');
-      socket.onerror = (err) => console.error('WebSocket error:', err);
-
       // 更新本地存储
       const updateLocalStorage = (key, value) => {
         localStorage.setItem(key, value);
@@ -266,32 +257,41 @@
         incenseEl.textContent = data.incenseCount;
       };
 
-      // 更新留言列表显示
+      // 更新留言列表
       const updateMessageList = () => {
-        messageListEl.innerHTML = data.messages.map(msg => `<li>${msg}</li>`).join('');
+        messageListEl.innerHTML = data.messages.map(msg => 
+          `<li>${msg}</li>`
+        ).join('');
       };
 
-      // 添加效果（这里示例为简单console输出，可根据需求添加动画效果）
+      // 添加互动效果
       const createEffect = (symbol) => {
-        console.log(`效果：${symbol}`);
+        const effectEl = document.createElement('div');
+        effectEl.style.position = 'fixed';
+        effectEl.style.fontSize = '24px';
+        effectEl.style.animation = 'floatUp 1s ease-out';
+        effectEl.textContent = symbol;
+        document.body.appendChild(effectEl);
+
+        // 动画结束后移除元素
+        setTimeout(() => {
+          effectEl.remove();
+        }, 1000);
       };
 
-      // 发送数据到服务器
-      const sendData = (type) => {
-        const message = {
-          type: type,
-          count: data[`${type}Count`]
-        };
-        socket.send(JSON.stringify(message));
-      };
-
-      // 通用新增功能
+      // 核心累加功能
       const addItem = (type, symbol) => {
         data[`${type}Count`]++;
         updateLocalStorage(storageKeys[type], data[`${type}Count`]);
         updateCounters();
         createEffect(symbol);
-        sendData(type);
+        
+        // 添加视觉反馈
+        const btn = document.getElementById(`btn${type.charAt(0).toUpperCase() + type.slice(1)}`);
+        btn.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+          btn.style.transform = 'scale(1)';
+        }, 200);
       };
 
       // 事件绑定
@@ -299,17 +299,18 @@
       btnFlower.addEventListener('click', () => addItem('flower', '🌸'));
       btnIncense.addEventListener('click', () => addItem('incense', '🎐'));
 
-      // 发送留言
+      // 留言功能
       btnSendMessage.addEventListener('click', () => {
         const message = messageInputEl.value.trim();
         if (message) {
-          const messageObj = { type: 'message', content: message };
-          socket.send(JSON.stringify(messageObj));
+          data.messages.push(message);
+          localStorage.setItem(storageKeys.messages, JSON.stringify(data.messages));
+          updateMessageList();
           messageInputEl.value = '';
         }
       });
 
-      // 背景音乐控制
+      // 音乐控制
       musicControlEl.addEventListener('click', () => {
         if (bgMusic.paused) {
           bgMusic.play();
@@ -320,45 +321,19 @@
         }
       });
 
-      // WebSocket 接收消息并更新页面
-      socket.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        switch(message.type) {
-          case 'candle':
-          case 'flower':
-          case 'incense':
-            data[`${message.type}Count`] = message.count;
-            updateLocalStorage(storageKeys[message.type], message.count);
-            updateCounters();
-            break;
-          case 'message':
-            data.messages.push(message.content);
-            updateLocalStorage(storageKeys.messages, JSON.stringify(data.messages));
-            updateMessageList();
-            break;
-          default:
-            console.warn('未知消息类型:', message.type);
-        }
-      };
-
-      // 导出数据功能（可根据需求绑定至按钮）
-      window.exportData = () => {
-        const exportObj = { timestamp: new Date().toISOString(), ...data };
-        const dataStr = JSON.stringify(exportObj, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `memorial-data_${new Date().toLocaleDateString()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      };
-
       // 初始化显示
       updateCounters();
       updateMessageList();
+
+      // 添加动画样式
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes floatUp {
+          0% { transform: translateY(0); opacity: 1; }
+          100% { transform: translateY(-100px); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
     });
   </script>
 </body>
