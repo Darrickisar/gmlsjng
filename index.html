@@ -282,16 +282,80 @@
       btnFlower.addEventListener('click', () => addItem('flower', '🌸'));
       btnIncense.addEventListener('click', () => addItem('incense', '🎐'));
 
-       // 留言功能
+      // 留言功能
+
       btnSendMessage.addEventListener('click', () => {
-        const message = messageInputEl.value.trim();
-        if (message) {
-          data.messages.push(message);
-          localStorage.setItem(storageKeys.messages, JSON.stringify(data.messages));
-          updateMessageList();
-          messageInputEl.value = '';
-        }
-      });
+  const message = messageInputEl.value.trim();
+  if (message) {
+    data.messages.push(message);
+    updateLocalStorage(storageKeys.messages, JSON.stringify(data.messages));
+    updateMessageList();
+    messageInputEl.value = ''; // 清空输入框
+  }
+});
+        
+      document.addEventListener('DOMContentLoaded', () => {
+    const storageKeys = {
+      messages: 'memorialMessages',
+      candle: 'candleCount',
+      flower: 'flowerCount',
+      incense: 'incenseCount'
+    };
+
+    const defaultData = {
+      messages: [],
+      candleCount: 0,
+      flowerCount: 0,
+      incenseCount: 0
+    };
+
+    const loadData = () => ({
+      messages: JSON.parse(localStorage.getItem(storageKeys.messages)) || defaultData.messages,
+      candleCount: parseInt(localStorage.getItem(storageKeys.candle)) || defaultData.candleCount,
+      flowerCount: parseInt(localStorage.getItem(storageKeys.flower)) || defaultData.flowerCount,
+      incenseCount: parseInt(localStorage.getItem(storageKeys.incense)) || defaultData.incenseCount
+    });
+
+    let data = loadData();
+    const messageListEl = document.getElementById('message-list');
+    const messageInputEl = document.getElementById('message-input');
+    const btnSendMessage = document.getElementById('send-message');
+    const DELETE_PASSWORD = "123456";
+
+    const updateLocalStorage = (key, value) => {
+      localStorage.setItem(key, value);
+    };
+
+    const updateMessageList = () => {
+  messageListEl.innerHTML = '';
+  data.messages.forEach((msg, index) => {
+    const li = document.createElement('li');
+    li.textContent = msg;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '❌ 删除';
+    deleteBtn.dataset.index = index;
+    deleteBtn.addEventListener('click', deleteMessage);
+
+    li.appendChild(deleteBtn);
+    messageListEl.appendChild(li);
+  });
+};
+
+const deleteMessage = (event) => {
+  const index = event.target.dataset.index;
+  const password = prompt('请输入删除密码:');
+  if (password === DELETE_PASSWORD) {
+    data.messages.splice(index, 1);
+    updateLocalStorage(storageKeys.messages, JSON.stringify(data.messages));
+    updateMessageList();
+  } else {
+    alert('密码错误，无法删除留言！');
+  }
+};
+
+    updateMessageList();
+  });
 
       // 音乐控制
       musicControlEl.addEventListener('click', () => {
