@@ -6,14 +6,25 @@ export default async function handler(req, res) {
 
     // 获取留言列表
     let messagesData = await get(blobPath);
-    let messages = messagesData ? JSON.parse(await messagesData.text()) : [];
+    let messages = [];
+
+    if (messagesData) {
+      try {
+        messages = JSON.parse(await messagesData.text());
+      } catch (err) {
+        console.error('留言 JSON 解析错误:', err);
+        messages = [];
+      }
+    }
 
     if (req.method === 'GET') {
       return res.status(200).json({ messages });
     }
 
     if (req.method === 'POST') {
-      const { message } = req.body;
+      const body = await req.json(); // 确保解析 JSON
+      const { message } = body;
+
       if (!message || message.trim() === '') {
         return res.status(400).json({ error: '留言不能为空' });
       }
