@@ -7,6 +7,6 @@
     { "src": "/api/(.*)", "dest": "api/index.js" },
     { "handle": "filesystem" },
     { "src": "/", "dest": "/index.html" },
-    { "src": "/(.*)", "dest": "/index.html" } // 确保所有路径都指向 index.html
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
