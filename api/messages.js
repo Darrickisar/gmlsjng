@@ -1,9 +1,14 @@
-import { kv } from '@vercel/kv';
+import { put, get } from '@vercel/blob';
 
 export default async function handler(req, res) {
   try {
+    const blobPath = 'memorial/messages.json';
+
+    // 获取留言列表
+    let messagesData = await get(blobPath);
+    let messages = messagesData ? JSON.parse(await messagesData.text()) : [];
+
     if (req.method === 'GET') {
-      const messages = (await kv.get('memorial:messages')) || [];
       return res.status(200).json({ messages });
     }
 
@@ -12,23 +17,19 @@ export default async function handler(req, res) {
       if (!message || message.trim() === '') {
         return res.status(400).json({ error: '留言不能为空' });
       }
-      let messages = (await kv.get('memorial:messages')) || [];
-      messages.push(message);
-      await kv.set('memorial:messages', messages);
-      return res.status(200).json({ messages });
-    }
 
-    if (req.method === 'DELETE') {
-      const { index } = req.body;
-      let messages = (await kv.get('memorial:messages')) || [];
-      messages.splice(index, 1);
-      await kv.set('memorial:messages', messages);
+      messages.push({ text: message, time: new Date().toISOString() });
+
+      await put(blobPath, JSON.stringify(messages), {
+        access: 'public',
+      });
+
       return res.status(200).json({ messages });
     }
 
     return res.status(405).json({ error: '不允许的方法' });
   } catch (error) {
-    console.error('留言 API 发生错误:', error);
-    return res.status(500).json({ error: '服务器错误' });
+    console.error('API 发生错误:', error);
+    return res.status(500).json({ error: '服务器内部错误' });
   }
 }
