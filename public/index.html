@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>革命烈士线上纪念馆</title>
+  <style>
+    :root {
+      --primary-color: #777;
+      --secondary-color: #999;
+    }
+    body {
+      font-family: 'Microsoft YaHei', 'SimSun', serif;
+      background: #e0e0e0 url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAIklEQVQIW2NkQAKrVq36zwjjgzhhYWGMYAEYB8RmROaABADeOQ8CXl/xfgAAAABJRU5ErkJggg==');
+      margin: 0;
+      min-height: 100vh;
+    }
+    .memorial-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(240, 240, 240, 0.95);
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    .title {
+      text-align: center;
+      color: var(--primary-color);
+      margin: 20px 0;
+      font-size: 2.5em;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .counters {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .counter {
+      text-align: center;
+      padding: 15px;
+      background: linear-gradient(145deg, #f0f0f0, #e8e8e8);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .counter-number {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 5px 0;
+      color: var(--primary-color);
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .action-btn {
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 16px;
+      background: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .music-control {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--primary-color);
+      color: white;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .message-box {
+      border-top: 2px solid var(--primary-color);
+      padding-top: 25px;
+    }
+    .inserted-image {
+      width: 100%;
+      margin-bottom: 20px;
+      filter: grayscale(100%);
+    }
+    .inserted-video {
+      width: 100%;
+      margin-top: 20px;
+      filter: grayscale(100%);
+    }
+    #message-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    #message-list li {
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #message-input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    #send-message {
+      padding: 10px 20px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #send-message:hover {
+      background-color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="memorial-container">
+    <img class="inserted-image" src="https://www.helloimg.com/i/2025/03/26/67e4192275ee1.png" alt="革命烈士纪念馆主图">
+    <h1 class="title">革命烈士永垂不朽</h1>
+    <div class="counters">
+      <div class="counter">
+        <div>点亮蜡烛</div>
+        <div class="counter-number" id="candleCount">0</div>
+        <div>支</div>
+      </div>
+      <div class="counter">
+        <div>敬献鲜花</div>
+        <div class="counter-number" id="flowerCount">0</div>
+        <div>朵</div>
+      </div>
+      <div class="counter">
+        <div>电子香炉</div>
+        <div class="counter-number" id="incenseCount">0</div>
+        <div>柱</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="action-btn" id="btnCandle">🕯️ 点亮蜡烛</button>
+      <button class="action-btn" id="btnFlower">🌸 敬献鲜花</button>
+      <button class="action-btn" id="btnIncense">🎐 电子香炉</button>
+    </div>
+    <video class="inserted-video" controls>
+      <source src="https://ik.imagekit.io/RedGhst1818/Revolutionary%20Martyrs'%20Memorial.mp4?updatedAt=1743003548987" type="video/mp4">
+      您的浏览器不支持视频播放。
+    </video>
+    <div class="message-box">
+      <h2>留言板</h2>
+      <input type="text" id="message-input" placeholder="请输入留言内容">
+      <button id="send-message">发送留言</button>
+      <ul id="message-list"></ul>
+    </div>
+    <div class="music-control" id="musicControl">
+      <span id="musicIcon">▶️</span>
+      <audio id="bgMusic" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2023/03/25/audio_ebd8a4d9b6.mp3" type="audio/mpeg">
+      </audio>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 获取DOM元素
+      const candleEl = document.getElementById('candleCount');
+      const flowerEl = document.getElementById('flowerCount');
+      const incenseEl = document.getElementById('incenseCount');
+      const messageListEl = document.getElementById('message-list');
+      const messageInputEl = document.getElementById('message-input');
+
+      // 更新计数器
+      async function updateCounter(type) {
+        try {
+          const res = await fetch(`/api/counter?type=${type}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type }) });
+          if (!res.ok) {
+            throw new Error(`HTTP error! Status: ${res.status}`);
+          }
+          const data = await res.json();
+          document.getElementById(`${type}Count`).textContent = data.count;
+        } catch (error) {
+          console.error(`${type} 计数更新失败`, error);
+        }
+      }
+
+      // 加载计数器数据
+      async function loadCounters() {
+        try {
+          const [candleRes, flowerRes, incenseRes] = await Promise.all([
+            fetch('/api/counter?type=candle'),
+            fetch('/api/counter?type=flower'),
+            fetch('/api/counter?type=incense')
+          ]);
+
+          if (!candleRes.ok || !flowerRes.ok || !incenseRes.ok) {
+            throw new Error('One or more counter requests failed');
+          }
+
+          const candleData = await candleRes.json();
+          const flowerData = await flowerRes.json();
+          const incenseData = await incenseRes.json();
+
+          candleEl.textContent = candleData.count || 0;
+          flowerEl.textContent = flowerData.count || 0;
+          incenseEl.textContent = incenseData.count || 0;
+        } catch (error) {
+          console.error('加载计数器失败:', error);
+        }
+      }
+
+      // 加载留言列表
+      async function loadMessages() {
+        try {
+          const res = await fetch('/api/messages');
+          if (!res.ok) {
+            throw new Error(`HTTP error! Status: ${res.status}`);
+          }
+          const result = await res.json();
+          const list = document.getElementById('message-list');
+          list.innerHTML = '';
+          result.messages.forEach(msg => {
+            const li = document.createElement('li');
+            li.textContent = msg;
+            list.appendChild(li);
+          });
+        } catch (error) {
+          console.error('留言加载失败', error);
+        }
+      }
+
+      // 发送留言
+      async function sendMessage() {
+        const input = document.getElementById('message-input');
+        if (!input.value.trim()) return;
+        try {
+          const res = await fetch('/api/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: input.value })
+          });
+          if (!res.ok) {
+            throw new Error(`HTTP error! Status: ${res.status}`);
+          }
+          input.value = '';
+          loadMessages(); // 发送后立即刷新留言列表
+        } catch (error) {
+          console.error('留言发送失败', error);
+        }
+      }
+
+      // 绑定事件
+      document.getElementById('btnCandle').addEventListener('click', () => updateCounter('candle'));
+      document.getElementById('btnFlower').addEventListener('click', () => updateCounter('flower'));
+      document.getElementById('btnIncense').addEventListener('click', () => updateCounter('incense'));
+      document.getElementById('send-message').addEventListener('click', sendMessage);
+
+      // 初始加载数据
+      loadCounters();
+      loadMessages();
+
+      // 每5秒轮询更新数据
+      setInterval(() => {
+        loadCounters();
+        loadMessages();
+      }, 5000);
+
+      // 音乐控制
+      const musicControl = document.getElementById('musicControl');
+      const bgMusic = document.getElementById('bgMusic');
+      const musicIcon = document.getElementById('musicIcon');
+
+      musicControl.addEventListener('click', () => {
+        if (bgMusic.paused) {
+          bgMusic.play();
+          musicIcon.textContent = '⏸️';
+        } else {
+          bgMusic.pause();
+          musicIcon.textContent = '▶️';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
