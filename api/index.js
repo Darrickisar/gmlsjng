@@ -9,8 +9,8 @@ app.use(bodyParser.json());
 
 // 初始化 Blob 实例
 const blob = new Blob({
-  projectId: "prj_bfvK4fHtcklMayiHZEhNkEOBRpfx",
-  token: "vercel_blob_rw_XUNFJUgwGuo8v8MC_ETEualt4YVHQJOGCiI9N53Qdhkqj2G"
+  projectId: process.env.VERCEL_PROJECT_ID,
+  token: process.env.VERCEL_BLOB_READ_WRITE_TOKEN
 });
 
 // 获取计数器数据
