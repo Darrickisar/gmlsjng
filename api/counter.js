@@ -1,29 +1,36 @@
-import { kv } from '@vercel/kv';
+import { put, get } from '@vercel/blob';
 
 export default async function handler(req, res) {
-  const { type } = req.query; // 确保前端传入的类型是正确的
-  if (!type || !['candle', 'flower', 'incense'].includes(type)) {
-    return res.status(400).json({ error: '无效的计数类型' });
-  }
-
   try {
-    // 获取计数
+    const { type } = req.query;
+    const validTypes = ['candle', 'flower', 'incense'];
+
+    if (!type || !validTypes.includes(type)) {
+      return res.status(400).json({ error: '无效的计数类型' });
+    }
+
+    const blobPath = `memorial/${type}.json`;
+
+    // 读取当前计数
+    let countData = await get(blobPath);
+    let count = countData ? JSON.parse(await countData.text()).count : 0;
+
     if (req.method === 'GET') {
-      const count = (await kv.get(`memorial:${type}`)) || 0;
       return res.status(200).json({ count });
     }
 
-    // 累加计数
     if (req.method === 'POST') {
-      const currentCount = (await kv.get(`memorial:${type}`)) || 0;
-      const newCount = currentCount + 1;
-      await kv.set(`memorial:${type}`, newCount);
-      return res.status(200).json({ count: newCount });
+      count++;
+      await put(blobPath, JSON.stringify({ count }), {
+        access: 'public', // 允许外部访问
+      });
+
+      return res.status(200).json({ count });
     }
 
     return res.status(405).json({ error: '不允许的方法' });
   } catch (error) {
-    console.error('计数器 API 发生错误:', error);
-    return res.status(500).json({ error: '服务器错误' });
+    console.error('API 发生错误:', error);
+    return res.status(500).json({ error: '服务器内部错误' });
   }
 }
