@@ -1,8 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // 添加 CORS 支持
 const { Blob } = require('@vercel/blob');
 
 const app = express();
+app.use(cors()); // 允许跨域请求
 app.use(bodyParser.json());
 
 // 初始化 Blob 实例
