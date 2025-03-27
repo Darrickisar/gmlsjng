@@ -1,0 +1,84 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f9;
+  color: #333;
+}
+
+.App {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.App-header {
+  text-align: center;
+  background-color: #4CAF50;
+  color: white;
+  padding: 20px 0;
+}
+
+.App-header h1 {
+  margin: 0;
+}
+
+main {
+  margin-top: 20px;
+}
+
+section {
+  margin-bottom: 20px;
+}
+
+.about p {
+  line-height: 1.6;
+}
+
+.heroes ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.heroes li {
+  background-color: #e0e0e0;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.messages form {
+  display: flex;
+  flex-direction: column;
+}
+
+.messages textarea {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: vertical;
+}
+
+.messages button {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.messages button:hover {
+  background-color: #45a049;
+}
+
+.message {
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
