@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './styles.css';
+import './styles.css'; // 引入样式文件
 
 function App() {
   return (
@@ -42,6 +42,7 @@ function App() {
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
+// 处理留言表单提交
 document.getElementById('messageForm').addEventListener('submit', async (event) => {
   event.preventDefault();
   const messageInput = document.querySelector('#messageForm textarea');
@@ -72,6 +73,7 @@ document.getElementById('messageForm').addEventListener('submit', async (event) 
   }
 });
 
+// 加载留言列表
 async function loadMessages() {
   try {
     const response = await fetch('/api/messages');
@@ -94,4 +96,5 @@ async function loadMessages() {
   }
 }
 
+// 初始化时加载留言列表
 loadMessages();
