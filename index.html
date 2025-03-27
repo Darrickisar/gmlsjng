@@ -179,115 +179,96 @@
     </div>
   </div>
   <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const candleEl = document.getElementById('candleCount');
-  const flowerEl = document.getElementById('flowerCount');
-  const incenseEl = document.getElementById('incenseCount');
-  const messageListEl = document.getElementById('message-list');
-  const messageInputEl = document.getElementById('message-input');
-  const btnCandle = document.getElementById('btnCandle');
-  const btnFlower = document.getElementById('btnFlower');
-  const btnIncense = document.getElementById('btnIncense');
-  const btnSendMessage = document.getElementById('send-message');
+    document.addEventListener('DOMContentLoaded', () => {
+      // 获取DOM元素
+      const candleEl = document.getElementById('candleCount');
+      const flowerEl = document.getElementById('flowerCount');
+      const incenseEl = document.getElementById('incenseCount');
+      const messageListEl = document.getElementById('message-list');
+      const messageInputEl = document.getElementById('message-input');
 
-  // 读取计数器
-  const loadCounters = async () => {
-    try {
-      const [candleRes, flowerRes, incenseRes] = await Promise.all([
-        fetch('/api/counter?type=candle'),
-        fetch('/api/counter?type=flower'),
-        fetch('/api/counter?type=incense')
-      ]);
-
-      const candleData = await candleRes.json();
-      const flowerData = await flowerRes.json();
-      const incenseData = await incenseRes.json();
-
-      candleEl.textContent = candleData.count || 0;
-      flowerEl.textContent = flowerData.count || 0;
-      incenseEl.textContent = incenseData.count || 0;
-    } catch (error) {
-      console.error('加载计数器失败:', error);
-    }
-  };
-
-  // 发送计数请求
-  const addCounter = async (type) => {
-    try {
-      const res = await fetch(`/api/counter?type=${type}`, { method: 'POST' });
-      const data = await res.json();
-      if (type === 'candle') candleEl.textContent = data.count;
-      if (type === 'flower') flowerEl.textContent = data.count;
-      if (type === 'incense') incenseEl.textContent = data.count;
-    } catch (error) {
-      console.error(`累加 ${type} 失败:`, error);
-    }
-  };
-
-  async function updateCounter(type) {
-      try {
-        let res = await fetch(`/api/counter?type=${type}`, { method: 'POST' });
-        let data = await res.json();
-        document.getElementById(`${type}Count`).textContent = data.count;
-      } catch (error) {
-        console.error(`${type} 计数更新失败`, error);
-      }
-    }
-    
-    async function loadCounters() {
-      for (let type of ['candle', 'flower', 'incense']) {
+      // 更新计数器
+      async function updateCounter(type) {
         try {
-          let res = await fetch(`/api/counter?type=${type}`);
-          let data = await res.json();
-          document.getElementById(`${type}Count`).textContent = data.count || 0;
+          const res = await fetch(`/api/counter?type=${type}`, { method: 'POST' });
+          const data = await res.json();
+          document.getElementById(`${type}Count`).textContent = data.count;
         } catch (error) {
-          console.error(`${type} 计数加载失败`, error);
+          console.error(`${type} 计数更新失败`, error);
         }
       }
-    }
-    
-    async function loadMessages() {
-      try {
-        let res = await fetch('/api/messages');
-        let result = await res.json();
-        let list = document.getElementById('message-list');
-        list.innerHTML = '';
-        result.messages.forEach(msg => {
-          let li = document.createElement('li');
-          li.textContent = msg;
-          list.appendChild(li);
-        });
-      } catch (error) {
-        console.error('留言加载失败', error);
-      }
-    }
-    
-    async function sendMessage() {
-      let input = document.getElementById('message-input');
-      if (!input.value.trim()) return;
-      try {
-        let res = await fetch('/api/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: input.value })
-        });
-        input.value = '';
-        loadMessages();
-      } catch (error) {
-        console.error('留言发送失败', error);
-      }
-    }
-    
-    document.getElementById('btnCandle').addEventListener('click', () => updateCounter('candle'));
-    document.getElementById('btnFlower').addEventListener('click', () => updateCounter('flower'));
-    document.getElementById('btnIncense').addEventListener('click', () => updateCounter('incense'));
-    document.getElementById('send-message').addEventListener('click', sendMessage);
-    
-  // 初始加载数据
-  loadCounters();
-  loadMessages();
-});
 
+      // 加载计数器数据
+      async function loadCounters() {
+        try {
+          const [candleRes, flowerRes, incenseRes] = await Promise.all([
+            fetch('/api/counter?type=candle'),
+            fetch('/api/counter?type=flower'),
+            fetch('/api/counter?type=incense')
+          ]);
+
+          const candleData = await candleRes.json();
+          const flowerData = await flowerRes.json();
+          const incenseData = await incenseRes.json();
+
+          candleEl.textContent = candleData.count || 0;
+          flowerEl.textContent = flowerData.count || 0;
+          incenseEl.textContent = incenseData.count || 0;
+        } catch (error) {
+          console.error('加载计数器失败:', error);
+        }
+      }
+
+      // 加载留言列表
+      async function loadMessages() {
+        try {
+          const res = await fetch('/api/messages');
+          const result = await res.json();
+          const list = document.getElementById('message-list');
+          list.innerHTML = '';
+          result.messages.forEach(msg => {
+            const li = document.createElement('li');
+            li.textContent = msg;
+            list.appendChild(li);
+          });
+        } catch (error) {
+          console.error('留言加载失败', error);
+        }
+      }
+
+      // 发送留言
+      async function sendMessage() {
+        const input = document.getElementById('message-input');
+        if (!input.value.trim()) return;
+        try {
+          await fetch('/api/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: input.value })
+          });
+          input.value = '';
+          loadMessages(); // 发送后立即刷新留言列表
+        } catch (error) {
+          console.error('留言发送失败', error);
+        }
+      }
+
+      // 绑定事件
+      document.getElementById('btnCandle').addEventListener('click', () => updateCounter('candle'));
+      document.getElementById('btnFlower').addEventListener('click', () => updateCounter('flower'));
+      document.getElementById('btnIncense').addEventListener('click', () => updateCounter('incense'));
+      document.getElementById('send-message').addEventListener('click', sendMessage);
+
+      // 初始加载数据
+      loadCounters();
+      loadMessages();
+
+      // 每5秒轮询更新数据
+      setInterval(() => {
+        loadCounters();
+        loadMessages();
+      }, 5000);
+    });
   </script>
 </body>
 </html>
