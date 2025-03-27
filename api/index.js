@@ -15,8 +15,15 @@ const blob = new Blob({
 app.get('/counter', async (req, res) => {
   const type = req.query.type;
   try {
-    const counterData = await blob.readJSON('counters.json');
-    if (counterData && counterData[type] !== undefined) {
+    let counterData = {};
+    try {
+      counterData = await blob.readJSON('counters.json');
+    } catch (err) {
+      // 如果文件不存在，则初始化为空对象
+      counterData = {};
+    }
+
+    if (counterData[type] !== undefined) {
       res.json({ count: counterData[type] });
     } else {
       res.status(404).json({ error: 'Counter type not found' });
@@ -58,8 +65,15 @@ app.post('/counter', async (req, res) => {
 // 获取留言列表
 app.get('/messages', async (req, res) => {
   try {
-    const messagesData = await blob.readJSON('messages.json');
-    res.json({ messages: messagesData || [] });
+    let messagesData = [];
+    try {
+      messagesData = await blob.readJSON('messages.json');
+    } catch (err) {
+      // 如果文件不存在，则初始化为空数组
+      messagesData = [];
+    }
+
+    res.json({ messages: messagesData });
   } catch (error) {
     console.error('Error reading messages:', error);
     res.status(500).json({ error: 'Internal Server Error' });
