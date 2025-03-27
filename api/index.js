@@ -9,7 +9,7 @@ app.use(bodyParser.json());
 
 // 初始化 Blob 实例
 const blob = new Blob({
-  projectId:"prj_bfvK4fHtcklMayiHZEhNkEOBRpfx",
+  projectId:"prj_yDFNdmQ6zJeugILNIyth81Cyh8ro",
   token: "vercel_blob_rw_XUNFJUgwGuo8v8MC_ETEualt4YVHQJOGCiI9N53Qdhkqj2G"
 });
 
