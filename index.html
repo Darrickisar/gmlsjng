@@ -189,7 +189,10 @@
       // 更新计数器
       async function updateCounter(type) {
         try {
-          const res = await fetch(`/api/counter`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type }) });
+          const res = await fetch(`/api/counter?type=${type}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type }) });
+          if (!res.ok) {
+            throw new Error(`HTTP error! Status: ${res.status}`);
+          }
           const data = await res.json();
           document.getElementById(`${type}Count`).textContent = data.count;
         } catch (error) {
@@ -205,6 +208,10 @@
             fetch('/api/counter?type=flower'),
             fetch('/api/counter?type=incense')
           ]);
+
+          if (!candleRes.ok || !flowerRes.ok || !incenseRes.ok) {
+            throw new Error('One or more counter requests failed');
+          }
 
           const candleData = await candleRes.json();
           const flowerData = await flowerRes.json();
@@ -222,6 +229,9 @@
       async function loadMessages() {
         try {
           const res = await fetch('/api/messages');
+          if (!res.ok) {
+            throw new Error(`HTTP error! Status: ${res.status}`);
+          }
           const result = await res.json();
           const list = document.getElementById('message-list');
           list.innerHTML = '';
@@ -240,11 +250,14 @@
         const input = document.getElementById('message-input');
         if (!input.value.trim()) return;
         try {
-          await fetch('/api/messages', {
+          const res = await fetch('/api/messages', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: input.value })
           });
+          if (!res.ok) {
+            throw new Error(`HTTP error! Status: ${res.status}`);
+          }
           input.value = '';
           loadMessages(); // 发送后立即刷新留言列表
         } catch (error) {
