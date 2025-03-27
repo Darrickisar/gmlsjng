@@ -137,7 +137,6 @@
 <body>
   <div class="memorial-container">
     <img class="inserted-image" src="https://www.helloimg.com/i/2025/03/26/67e4192275ee1.png" alt="革命烈士纪念馆主图">
-    <div class="header-banner"></div>
     <h1 class="title">革命烈士永垂不朽</h1>
     <div class="counters">
       <div class="counter">
@@ -190,7 +189,7 @@
       // 更新计数器
       async function updateCounter(type) {
         try {
-          const res = await fetch(`/api/counter?type=${type}`, { method: 'POST' });
+          const res = await fetch(`/api/counter`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type }) });
           const data = await res.json();
           document.getElementById(`${type}Count`).textContent = data.count;
         } catch (error) {
@@ -268,6 +267,21 @@
         loadCounters();
         loadMessages();
       }, 5000);
+
+      // 音乐控制
+      const musicControl = document.getElementById('musicControl');
+      const bgMusic = document.getElementById('bgMusic');
+      const musicIcon = document.getElementById('musicIcon');
+
+      musicControl.addEventListener('click', () => {
+        if (bgMusic.paused) {
+          bgMusic.play();
+          musicIcon.textContent = '⏸️';
+        } else {
+          bgMusic.pause();
+          musicIcon.textContent = '▶️';
+        }
+      });
     });
   </script>
 </body>
