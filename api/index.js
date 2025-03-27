@@ -1,54 +1,97 @@
-
 const express = require('express');
 const bodyParser = require('body-parser');
+const { Blob } = require('@vercel/blob');
 
 const app = express();
 app.use(bodyParser.json());
 
-// 模拟数据库
-let db = {
-  counters: {
-    candle: 0,
-    flower: 0,
-    incense: 0
-  },
-  messages: []
-};
+// 初始化 Blob 实例
+const blob = new Blob({
+  projectId: prj_bfvK4fHtcklMayiHZEhNkEOBRpfx,
+  token: vercel_blob_rw_XUNFJUgwGuo8v8MC_ETEualt4YVHQJOGCiI9N53Qdhkqj2G
+});
 
 // 获取计数器数据
-app.get('/counter', (req, res) => {
+app.get('/counter', async (req, res) => {
   const type = req.query.type;
-  if (db.counters[type] !== undefined) {
-    res.json({ count: db.counters[type] });
-  } else {
-    res.status(404).json({ error: 'Counter type not found' });
+  try {
+    const counterData = await blob.readJSON('counters.json');
+    if (counterData && counterData[type] !== undefined) {
+      res.json({ count: counterData[type] });
+    } else {
+      res.status(404).json({ error: 'Counter type not found' });
+    }
+  } catch (error) {
+    console.error('Error reading counters:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
 // 更新计数器数据
-app.post('/counter', (req, res) => {
+app.post('/counter', async (req, res) => {
   const type = req.body.type;
-  if (db.counters[type] !== undefined) {
-    db.counters[type]++;
-    res.json({ count: db.counters[type] });
-  } else {
-    res.status(404).json({ error: 'Counter type not found' });
+  try {
+    let counterData = {};
+    try {
+      counterData = await blob.readJSON('counters.json');
+    } catch (err) {
+      // 如果文件不存在，则初始化为空对象
+      counterData = {};
+    }
+
+    if (counterData[type] === undefined) {
+      counterData[type] = 0;
+    }
+    counterData[type]++;
+
+    await blob.write('counters.json', JSON.stringify(counterData), {
+      contentType: 'application/json'
+    });
+
+    res.json({ count: counterData[type] });
+  } catch (error) {
+    console.error('Error updating counters:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
 // 获取留言列表
-app.get('/messages', (req, res) => {
-  res.json({ messages: db.messages });
+app.get('/messages', async (req, res) => {
+  try {
+    const messagesData = await blob.readJSON('messages.json');
+    res.json({ messages: messagesData || [] });
+  } catch (error) {
+    console.error('Error reading messages:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 // 发送留言
-app.post('/messages', (req, res) => {
+app.post('/messages', async (req, res) => {
   const message = req.body.message;
-  if (message && typeof message === 'string') {
-    db.messages.push(message);
+  if (!message || typeof message !== 'string') {
+    return res.status(400).json({ error: 'Invalid message format' });
+  }
+
+  try {
+    let messagesData = [];
+    try {
+      messagesData = await blob.readJSON('messages.json');
+    } catch (err) {
+      // 如果文件不存在，则初始化为空数组
+      messagesData = [];
+    }
+
+    messagesData.push(message);
+
+    await blob.write('messages.json', JSON.stringify(messagesData), {
+      contentType: 'application/json'
+    });
+
     res.json({ success: true });
-  } else {
-    res.status(400).json({ error: 'Invalid message format' });
+  } catch (error) {
+    console.error('Error writing messages:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
