@@ -13,7 +13,16 @@ export default async function handler(req, res) {
 
     // 读取当前计数
     let countData = await get(blobPath);
-    let count = countData ? JSON.parse(await countData.text()).count : 0;
+    let count = 0;
+
+    if (countData) {
+      try {
+        count = JSON.parse(await countData.text()).count || 0;
+      } catch (err) {
+        console.error('JSON 解析错误:', err);
+        count = 0;
+      }
+    }
 
     if (req.method === 'GET') {
       return res.status(200).json({ count });
@@ -22,7 +31,7 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       count++;
       await put(blobPath, JSON.stringify({ count }), {
-        access: 'public', // 允许外部访问
+        access: 'public',
       });
 
       return res.status(200).json({ count });
