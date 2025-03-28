@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './styles.css'; // 引入样式文件
+import 'src/styles.css'; // 引入样式文件
 
 function App() {
   return (
